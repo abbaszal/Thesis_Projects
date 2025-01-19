@@ -1,5 +1,6 @@
-# Ignore data files
+# Ignore data files (but allow README.md)
 data/*
+!data/README.md
 
 # Ignore .DS_Store files
 **/.DS_Store
