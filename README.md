@@ -24,6 +24,7 @@ To address these challenges, this research utilizes concepts from **game theory*
 
 - **Datasets Used**:
   - A spam-based dataset, manually partitioned among 10 clients.
+  - An activity recognition dataset, which originally consisted of data collected from 18 clients but i useed 10 clients for simulation.
 
 - **Simulation Setup**:
   - Federated learning simulations were conducted under various configurations to evaluate:
