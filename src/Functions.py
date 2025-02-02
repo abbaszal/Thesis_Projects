@@ -228,35 +228,38 @@ def analyze_worst_combinations(df_results):
 
 
 
+def compute_and_visualize_shapley_values(df_results, client_local_accuracies, n_clients=10, plot=True, model_name="Model", print_df=True):
 
-
-def compute_and_visualize_shapley_values(  df_results ,  client_local_accuracies,  n_clients=10):
-
-
-    # Create a mapping from subset to global accuracy
+    # Create a mapping from each coalition (as a frozenset of 0-indexed clients) to its global accuracy.
     subset_value = defaultdict(float)
     for index, row in df_results.iterrows():
-        clients_included = (row['Clients'])  # List of client indices (1-based)
+        clients_included = row['Clients']
+        # If the Clients value is stored as a string (e.g. "[1, 2, 3]"), convert it to a list.
+        if isinstance(clients_included, str):
+            try:
+                clients_included = ast.literal_eval(clients_included)
+            except Exception as e:
+                print(f"Warning: Unable to parse Clients column at index {index}: {clients_included}. Error: {e}")
+                clients_included = []
         global_accuracy = row['Global Accuracy']
-
-        # Convert to 0-based indices and create a frozenset
+        # Convert 1-indexed clients to 0-indexed and create a frozenset
         subset = frozenset([client - 1 for client in clients_included])
         subset_value[subset] = global_accuracy
 
-    # Generate all possible subsets of clients
+    # Generate all possible subsets (coalitions) of clients (0-indexed)
     all_subsets = []
     for k in range(n_clients + 1):
         for subset in combinations(range(n_clients), k):
             all_subsets.append(frozenset(subset))
 
-    # Precompute factorials for efficiency
+    # Precompute factorials for efficiency in weight computation
     factorials = [math.factorial(k) for k in range(n_clients + 1)]
     n_factorial = factorials[n_clients]
 
-    # Initialize Shapley values
+    # Initialize an array for Shapley values
     shapley_values = np.zeros(n_clients)
 
-    # Compute Shapley values for each client
+    # Compute the Shapley value for each client
     for i in range(n_clients):
         shapley_value_i = 0.0
         for S in all_subsets:
@@ -269,42 +272,49 @@ def compute_and_visualize_shapley_values(  df_results ,  client_local_accuracies
                 shapley_value_i += weight * marginal_contribution
         shapley_values[i] = shapley_value_i
 
-    # Normalize Shapley values so they sum to 1
-    total_value = subset_value.get(frozenset(range(n_clients)), 0)
-    normalized_shapley_values = shapley_values / total_value
+    # Get the global accuracy of the grand coalition (all clients)
+    grand_coalition = frozenset(range(n_clients))
+    total_value = subset_value.get(grand_coalition, 0)
+    if total_value == 0 or np.isnan(total_value):
+        print("Warning: Grand coalition global accuracy is zero or NaN. Normalized Shapley values will not be computed normally.")
+        normalized_shapley_values = shapley_values  # or, for instance, you might set them to zeros
+    else:
+        normalized_shapley_values = shapley_values / total_value
 
-    # Prepare data for output and plotting
+    # Prepare the output DataFrame
     clients = [f'Client {i + 1}' for i in range(n_clients)]
-    local_vals = [client_local_accuracies[client] for client in range(n_clients)]
-
-    # Create a DataFrame to display Shapley values and local accuracies
+    # Ensure that the keys used in client_local_accuracies are integers 0..n_clients-1
+    local_vals = [client_local_accuracies.get(i, np.nan) for i in range(n_clients)]
     df_output = pd.DataFrame({
         'Client': clients,
         'Local Accuracy': local_vals,
         'Normalized Shapley Value': normalized_shapley_values
     })
 
+    # Sort and print the DataFrame for convenience
+    sorted_df = df_output.sort_values(by='Normalized Shapley Value', ascending=False)
+    
+    # Print DataFrame only if print_df is True
+    if print_df:
+        print(sorted_df)
 
-    # Sort the DataFrame for printing
-    sorted_df = df_output.sort_values(by=['Normalized Shapley Value'], ascending=False)
-    print(sorted_df)
-
-    # Visualization
-    plt.figure(figsize=(10, 6))
-    colors = sns.color_palette("tab10", n_colors=len(local_vals))
-
-    for i, (local_val, shapley_val) in enumerate(zip(local_vals, normalized_shapley_values)):
-        plt.scatter(local_val, shapley_val, color=colors[i], label=f"Client {i + 1}", s=100)
-
-    plt.xlabel("Local Accuracy")
-    plt.ylabel("Normalized Shapley Value")
-    plt.title("Normalized Shapley Values vs Local Accuracies")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    # Plot the values only if requested
+    if plot:
+        plt.figure(figsize=(10, 6))
+        colors = sns.color_palette("tab10", n_colors=len(local_vals))
+        for i, (local_val, shapley_val) in enumerate(zip(local_vals, normalized_shapley_values)):
+            plt.scatter(local_val, shapley_val, color=colors[i], label=f"Client {i + 1}", s=100)
+        plt.xlabel("Local Accuracy")
+        plt.ylabel("Normalized Shapley Value")
+        plt.title(f"Normalized Shapley Values vs Local Accuracies for {model_name}")
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
 
     return df_output
+
+
 
 
 
