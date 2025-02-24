@@ -306,7 +306,7 @@ def compute_and_visualize_shapley_values(df_results, client_local_accuracies, n_
             plt.scatter(local_val, shapley_val, color=colors[i], label=f"Client {i + 1}", s=100)
         plt.xlabel("Local Accuracy")
         plt.ylabel("Normalized Shapley Value")
-        plt.title(f"Normalized Shapley Values vs Local Accuracies for {model_name}")
+        plt.title(f"{model_name}")
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.grid(True)
         plt.tight_layout()
