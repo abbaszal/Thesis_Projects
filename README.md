@@ -1,1 +1,1 @@
-### Game-Theoretic Approach to the Viability of Federated Learning Under Voluntary Client Participation
+### Evaluating Coalition Stability in Federated Learning under Voluntary Client Participation
