@@ -1,0 +1,10 @@
+Nash Equilibrium,3 Low-Quality Clients,4 Low-Quality Clients,6 Low-Quality Clients,8 Low-Quality Clients,9 Low-Quality Clients
+1111111111,16,18,17,18,19
+1011111111,1,0,2,1,0
+0110111111,1,0,1,0,0
+1110111111,1,0,0,0,0
+1111011111,1,1,0,0,0
+1111110111,1,0,0,0,0
+0111111111,0,1,0,1,1
+0000011000,0,0,1,0,0
+0100111111,0,0,1,0,0
