@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from corrupt_data_hugadb import corrupt_data, corrupt_labels  
+from utils.HuGaDB.corrupt_data_hugadb import corrupt_data, corrupt_labels  
 
 
 
