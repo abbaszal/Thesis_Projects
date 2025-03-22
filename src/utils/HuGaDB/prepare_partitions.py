@@ -7,7 +7,7 @@ from utils.HuGaDB.corrupt_data_hugadb import corrupt_data, corrupt_labels
 
 
 def prepare_partitions(client_idx, trial_seed, sample_size, num_corrupted_clients,
-                       train_files_pattern, corruption_params, label_corruption_prob):
+                       train_files_pattern, corruption_params, label_corruption_prob ,  label_encoder):
     """
     Prepares the training partition for a given client.
     Loads data, samples a fixed number of instances, and (if applicable)
